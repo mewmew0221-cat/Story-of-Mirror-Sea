@@ -480,10 +480,11 @@ body::before {
 
 /* ===== 頁碼 ===== */
 .page-number {
+  flex-shrink: 0;       /* 不讓頁碼被文字區壓縮 */
   text-align: center;
   font-size: 0.7rem;
   color: #7a6040;
-  padding: 6px 0 10px;
+  padding: 10px 0 22px;
   letter-spacing: 3px;
   position: relative;
   z-index: 2;
@@ -760,6 +761,28 @@ body::before {
 .about-close:hover {
   color: #d4a84b;
   transform: rotate(90deg);
+}
+
+/* ===== 隱藏量尺（分頁用）===== */
+#page-ruler {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Noto Serif TC', 'Georgia', serif;
+}
+#page-ruler p {
+  color: #1a1005;
+  font-size: 0.96rem;
+  line-height: 2;
+  margin-bottom: 0.7em;
+  text-indent: 2em;
+}
+#page-ruler p:first-child {
+  text-indent: 0;
 }
 
 /* ===== 手機版 ===== */

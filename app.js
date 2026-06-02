@@ -1,7 +1,5 @@
 const API = 'https://script.google.com/macros/s/AKfycbz5bZI3j1HCOyAAPcUmQVTI0V8VKf7C4YyzLrM-NhnFctFYiG_yYsMam3fETwX45Pm2Sg/exec';
 
-const CHARS_PER_PAGE = 320;
-
 let currentChapter = 1;
 let totalChapters = 1;
 let currentChapterTitle = '';
@@ -14,23 +12,78 @@ async function fetchJSON(url) {
   return res.json();
 }
 
+/**
+ * 用 DOM 量尺精確分頁：
+ * 段落逐一塞入量尺，scrollHeight 超過可用高度就換頁，
+ * 完全依照實際渲染高度，不靠字數估算。
+ */
 function splitIntoPages(content) {
   const raw = content.replace(/\\n/g, '\n');
   const paragraphs = raw.split(/\n+/).filter(p => p.trim());
+
+  const ruler   = document.getElementById('page-ruler');
+  const pcEl    = document.querySelector('.page-content');
+  const titleEl = document.getElementById('chapter-title-display');
+
+  // 若量尺或書頁尚未就緒，退回字數估算（保底）
+  if (!ruler || !pcEl) {
+    const FALLBACK = 260;
+    const result = [];
+    let cur = [], count = 0;
+    for (const p of paragraphs) {
+      cur.push(p); count += p.length;
+      if (count >= FALLBACK) { result.push(cur); cur = []; count = 0; }
+    }
+    if (cur.length) result.push(cur);
+    return result;
+  }
+
+  // 暫時填入章節標題，量出標題佔用的高度
+  const prevTitle = titleEl.textContent;
+  titleEl.textContent = currentChapterTitle;
+  const titleH = titleEl.offsetHeight
+    + parseFloat(getComputedStyle(titleEl).marginBottom || '0');
+  titleEl.textContent = prevTitle;
+
+  // 設定量尺尺寸 = 書頁內容區實際寬高，扣除標題高度
+  const cs       = getComputedStyle(pcEl);
+  const innerW   = pcEl.clientWidth  - parseFloat(cs.paddingLeft)  - parseFloat(cs.paddingRight);
+  const innerH   = pcEl.clientHeight - parseFloat(cs.paddingTop)   - parseFloat(cs.paddingBottom);
+  const availH   = Math.max(100, innerH - titleH);
+
+  ruler.style.width  = innerW + 'px';
+  ruler.style.height = availH + 'px';
+
   const result = [];
   let current = [];
-  let count = 0;
+  ruler.innerHTML = '';
 
-  for (const p of paragraphs) {
-    current.push(p);
-    count += p.length;
-    if (count >= CHARS_PER_PAGE) {
-      result.push(current);
-      current = [];
-      count = 0;
+  for (const para of paragraphs) {
+    const p = document.createElement('p');
+    p.textContent = para;
+    ruler.appendChild(p);
+
+    if (ruler.scrollHeight > availH) {
+      if (current.length > 0) {
+        // 這段放不下，先存目前這頁，重開新頁
+        result.push(current);
+        current = [para];
+        ruler.innerHTML = '';
+        const newP = document.createElement('p');
+        newP.textContent = para;
+        ruler.appendChild(newP);
+      } else {
+        // 單段就超高（極長段落），整段放進一頁避免無窮迴圈
+        result.push([para]);
+        ruler.innerHTML = '';
+      }
+    } else {
+      current.push(para);
     }
   }
+
   if (current.length) result.push(current);
+  ruler.innerHTML = ''; // 用完清空
   return result;
 }
 
