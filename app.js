@@ -1,6 +1,6 @@
 const API = 'https://script.google.com/macros/s/AKfycbz5bZI3j1HCOyAAPcUmQVTI0V8VKf7C4YyzLrM-NhnFctFYiG_yYsMam3fETwX45Pm2Sg/exec';
 
-const CHARS_PER_PAGE = 380;
+const CHARS_PER_PAGE = 320;
 
 let currentChapter = 1;
 let totalChapters = 1;

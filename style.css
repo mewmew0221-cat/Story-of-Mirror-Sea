@@ -3,8 +3,7 @@
 body {
   font-family: 'Georgia', '新細明體', serif;
   background: #0d1b2a;
-  background-image:
-    radial-gradient(ellipse at top, #1a2f4a 0%, #0d1b2a 70%);
+  background-image: radial-gradient(ellipse at top, #1a2f4a 0%, #0d1b2a 70%);
   min-height: 100vh;
   color: #e0d7c6;
 }
@@ -45,35 +44,79 @@ body {
   display: flex;
   width: 100%;
   max-width: 680px;
-  min-height: 520px;
-  border-radius: 4px 12px 12px 4px;
-  box-shadow:
-    -6px 6px 20px rgba(0,0,0,0.6),
-    0 0 0 1px #0a0a0a,
-    inset 0 0 30px rgba(0,0,0,0.2);
+  height: 640px;
+  border-radius: 3px 10px 10px 3px;
   position: relative;
+  /* 整體書本陰影，模擬厚重感 */
+  filter: drop-shadow(-8px 12px 24px rgba(0,0,0,0.7));
 }
 
+/* ===== 書脊（左側）===== */
 #book-spine {
-  width: 28px;
-  min-height: 100%;
-  background: linear-gradient(to right,
-    #0a1628 0%,
-    #1a2f4a 40%,
-    #0f2240 60%,
-    #0a1628 100%);
-  border-radius: 4px 0 0 4px;
+  width: 36px;
+  height: 100%;
   flex-shrink: 0;
-  box-shadow: inset -3px 0 8px rgba(0,0,0,0.5);
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(to right,
+    #04090f 0%,
+    #0d1e33 15%,
+    #1a3050 35%,
+    #243d60 50%,
+    #1a3050 65%,
+    #0d1e33 85%,
+    #04090f 100%
+  );
+  position: relative;
+  box-shadow: inset -4px 0 10px rgba(0,0,0,0.6);
 }
 
-/* ===== 頁面場景（翻頁容器）===== */
-#page-scene {
-  flex: 1;
-  perspective: 1800px;
+/* 書脊上的裝飾線 */
+#book-spine::before {
+  content: '';
+  position: absolute;
+  top: 20px; bottom: 20px;
+  left: 8px; right: 8px;
+  border-left: 1px solid rgba(201,169,110,0.2);
+  border-right: 1px solid rgba(201,169,110,0.2);
+}
+
+/* ===== 書頁疊層效果（右側）===== */
+#page-stack {
+  width: 14px;
+  height: 100%;
+  flex-shrink: 0;
+  border-radius: 0 10px 10px 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    #e8dcac 0px,
+    #ddd0a0 1px,
+    #f0e8c0 2px,
+    #e8dcac 3px
+  );
+  box-shadow:
+    inset -3px 0 6px rgba(0,0,0,0.25),
+    2px 0 4px rgba(0,0,0,0.3);
   position: relative;
   overflow: hidden;
-  border-radius: 0 12px 12px 0;
+}
+
+#page-stack::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.15) 0%,
+    transparent 40%,
+    rgba(255,255,255,0.08) 100%
+  );
+}
+
+/* ===== 頁面場景 ===== */
+#page-scene {
+  flex: 1;
+  perspective: 2000px;
+  position: relative;
+  overflow: hidden;
 }
 
 #page-flipper {
@@ -84,52 +127,54 @@ body {
   transform-origin: left center;
 }
 
+/* 翻頁動畫：模擬從右邊翻起的頁面 */
 #page-flipper.flipping-forward {
-  animation: flipForward 0.6s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+  animation: flipForward 0.7s ease-in-out forwards;
 }
 
 #page-flipper.flipping-backward {
-  animation: flipBackward 0.6s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+  animation: flipBackward 0.7s ease-in-out forwards;
 }
 
 @keyframes flipForward {
-  0%   { transform: rotateY(0deg); }
-  50%  { transform: rotateY(-90deg); }
-  51%  { transform: rotateY(90deg); }
-  100% { transform: rotateY(0deg); }
+  0%   { transform: rotateY(0deg); filter: brightness(1); }
+  25%  { filter: brightness(0.85); }
+  49%  { transform: rotateY(-89deg); filter: brightness(0.6); }
+  51%  { transform: rotateY(89deg); filter: brightness(0.6); }
+  75%  { filter: brightness(0.9); }
+  100% { transform: rotateY(0deg); filter: brightness(1); }
 }
 
 @keyframes flipBackward {
-  0%   { transform: rotateY(0deg); }
-  50%  { transform: rotateY(90deg); }
-  51%  { transform: rotateY(-90deg); }
-  100% { transform: rotateY(0deg); }
+  0%   { transform: rotateY(0deg); filter: brightness(1); }
+  25%  { filter: brightness(0.85); }
+  49%  { transform: rotateY(89deg); filter: brightness(0.6); }
+  51%  { transform: rotateY(-89deg); filter: brightness(0.6); }
+  75%  { filter: brightness(0.9); }
+  100% { transform: rotateY(0deg); filter: brightness(1); }
 }
 
-/* ===== 書頁面 ===== */
+/* ===== 書頁紙張 ===== */
 .page-face {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   backface-visibility: hidden;
-  background:
-    repeating-linear-gradient(
-      transparent,
-      transparent 31px,
-      rgba(180,160,120,0.08) 31px,
-      rgba(180,160,120,0.08) 32px
-    ),
-    linear-gradient(
-      135deg,
-      #f5edcc 0%,
-      #f0e8c0 30%,
-      #ede3b8 60%,
-      #e8dcac 100%
-    );
-  border-radius: 0 12px 12px 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+
+  /* 泛黃舊書紙質感 */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+    linear-gradient(160deg,
+      #f6efd4 0%,
+      #f2e8c4 20%,
+      #ede1b8 45%,
+      #e8d9ac 70%,
+      #e2d09e 100%
+    );
+
+  /* 書頁左側靠近書脊的陰影 */
+  box-shadow: inset 8px 0 20px rgba(0,0,0,0.18), inset -2px 0 6px rgba(0,0,0,0.08);
 }
 
 .page-face.back {
@@ -137,66 +182,46 @@ body {
 }
 
 .page-content {
-  padding: 36px 40px 20px 36px;
+  padding: 32px 38px 16px 32px;
   flex: 1;
   overflow: hidden;
 }
 
-.page-face::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 20px;
-  background: linear-gradient(to right,
-    rgba(0,0,0,0.12) 0%,
-    transparent 100%);
-  pointer-events: none;
-}
-
-.page-face::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 10px;
-  bottom: 10px;
-  width: 1px;
-  background: rgba(180,160,120,0.3);
-}
-
-/* ===== 文字樣式 ===== */
+/* ===== 書頁文字 ===== */
 #chapter-title-display {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: bold;
-  color: #5c3d1e;
+  color: #4a2e0e;
   text-align: center;
-  margin-bottom: 20px;
-  letter-spacing: 2px;
-  border-bottom: 1px solid rgba(180,140,80,0.3);
-  padding-bottom: 12px;
+  margin-bottom: 18px;
+  letter-spacing: 3px;
+  border-bottom: 1px solid rgba(160,120,60,0.35);
+  padding-bottom: 10px;
 }
 
 #page-text p,
 #next-page-text p {
-  color: #1a1208;
-  font-size: 1rem;
-  line-height: 1.95;
-  margin-bottom: 0.9em;
+  color: #1a1005;
+  font-size: 0.97rem;
+  line-height: 2;
+  margin-bottom: 0.75em;
   text-indent: 2em;
 }
 
 #page-text strong,
 #next-page-text strong {
   color: #3d1a00;
+  font-weight: bold;
 }
 
 .page-number {
   text-align: center;
-  font-size: 0.75rem;
-  color: #8a7050;
-  padding: 8px 0 14px;
-  letter-spacing: 1px;
+  font-size: 0.72rem;
+  color: #9a8060;
+  padding: 6px 0 12px;
+  letter-spacing: 2px;
+  border-top: 1px solid rgba(160,120,60,0.2);
+  margin: 0 38px;
 }
 
 /* ===== 翻頁控制 ===== */
@@ -206,34 +231,35 @@ body {
   align-items: center;
   width: 100%;
   max-width: 680px;
-  padding: 16px 8px 0;
+  padding: 16px 4px 0;
 }
 
 #book-controls button {
   background: transparent;
   color: #c9a96e;
-  border: 1px solid #c9a96e55;
-  padding: 8px 22px;
+  border: 1px solid #c9a96e44;
+  padding: 8px 24px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   transition: all 0.2s;
   letter-spacing: 1px;
 }
 
 #book-controls button:hover {
-  background: rgba(201,169,110,0.1);
+  background: rgba(201,169,110,0.12);
   border-color: #c9a96e;
 }
 
 #book-controls button:disabled {
-  opacity: 0.2;
+  opacity: 0.18;
   cursor: default;
 }
 
 #page-info {
-  color: #8899aa;
-  font-size: 0.85rem;
+  color: #7a8fa0;
+  font-size: 0.82rem;
+  letter-spacing: 0.5px;
 }
 
 /* ===== 留言板 ===== */
@@ -241,7 +267,7 @@ body {
   max-width: 680px;
   margin: 0 auto 60px;
   padding: 30px;
-  background: #111e2e;
+  background: #0f1c2c;
   border-radius: 8px;
   border: 1px solid #1e3050;
 }
@@ -249,8 +275,8 @@ body {
 #comments-section h2 {
   color: #c9a96e;
   margin-bottom: 20px;
-  font-size: 1.1rem;
-  letter-spacing: 2px;
+  font-size: 1rem;
+  letter-spacing: 3px;
 }
 
 #comment-form {
@@ -262,9 +288,9 @@ body {
 
 #comment-form input,
 #comment-form textarea {
-  background: #1a2f4a;
-  border: 1px solid #2a4060;
-  color: #e0d7c6;
+  background: #162436;
+  border: 1px solid #243a54;
+  color: #d0c8b8;
   padding: 10px;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -275,26 +301,29 @@ body {
 #comment-form button {
   align-self: flex-end;
   background: #c9a96e;
-  color: #1a1208;
+  color: #1a1005;
   border: none;
-  padding: 8px 24px;
+  padding: 8px 26px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 0.9rem;
 }
 
 .comment-item {
-  border-bottom: 1px solid #1e3050;
+  border-bottom: 1px solid #1a2e44;
   padding: 12px 0;
 }
 
-.comment-item .name { color: #c9a96e; font-weight: bold; margin-bottom: 4px; font-size: 0.9rem; }
-.comment-item .text { font-size: 0.9rem; line-height: 1.7; color: #ccc; }
-.comment-item .time { font-size: 0.75rem; color: #556677; margin-top: 4px; }
+.comment-item .name { color: #c9a96e; font-weight: bold; margin-bottom: 4px; font-size: 0.88rem; }
+.comment-item .text { font-size: 0.88rem; line-height: 1.7; color: #b0b8c0; }
+.comment-item .time { font-size: 0.73rem; color: #445566; margin-top: 4px; }
 
 /* ===== 手機版 ===== */
-@media (max-width: 500px) {
-  #book { min-height: 420px; }
-  .page-content { padding: 24px 24px 16px 20px; }
-  #page-text p { font-size: 0.92rem; }
+@media (max-width: 520px) {
+  #book { height: 520px; }
+  .page-content { padding: 20px 20px 12px 18px; }
+  #page-text p { font-size: 0.9rem; }
+  #book-spine { width: 24px; }
+  #page-stack { width: 10px; }
 }
