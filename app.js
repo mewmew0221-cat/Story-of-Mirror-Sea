@@ -1,12 +1,106 @@
 const API = 'https://script.google.com/macros/s/AKfycbz5bZI3j1HCOyAAPcUmQVTI0V8VKf7C4YyzLrM-NhnFctFYiG_yYsMam3fETwX45Pm2Sg/exec';
 
+const CHARS_PER_PAGE = 380;
+
 let currentChapter = 1;
 let totalChapters = 1;
+let currentChapterTitle = '';
+let pages = [];
+let currentPage = 0;
 let isAnimating = false;
 
 async function fetchJSON(url) {
   const res = await fetch(url);
   return res.json();
+}
+
+function splitIntoPages(content) {
+  const raw = content.replace(/\\n/g, '\n');
+  const paragraphs = raw.split(/\n+/).filter(p => p.trim());
+  const result = [];
+  let current = [];
+  let count = 0;
+
+  for (const p of paragraphs) {
+    current.push(p);
+    count += p.length;
+    if (count >= CHARS_PER_PAGE) {
+      result.push(current);
+      current = [];
+      count = 0;
+    }
+  }
+  if (current.length) result.push(current);
+  return result;
+}
+
+function renderPage(pageIndex) {
+  const pageText = document.getElementById('page-text');
+  const titleEl = document.getElementById('chapter-title-display');
+  const pageNum = document.getElementById('page-num-display');
+  const pageInfo = document.getElementById('page-info');
+
+  titleEl.textContent = currentChapterTitle;
+  pageText.innerHTML = pages[pageIndex]
+    .map(p => `<p>${escapeHtml(p)}</p>`)
+    .join('');
+
+  const totalPages = pages.length;
+  pageNum.textContent = `— ${pageIndex + 1} —`;
+  pageInfo.textContent = `第 ${currentChapter} 章　第 ${pageIndex + 1} 頁 / 共 ${totalPages} 頁`;
+
+  document.getElementById('btn-prev').disabled = (currentChapter === 1 && pageIndex === 0);
+  document.getElementById('btn-next').disabled = (currentChapter === totalChapters && pageIndex === totalPages - 1);
+}
+
+async function loadChapter(chapter) {
+  const data = await fetchJSON(`${API}?action=novel&chapter=${chapter}`);
+  totalChapters = data.total;
+  currentChapterTitle = data.title;
+  pages = splitIntoPages(data.content);
+  document.getElementById('chapter-select').value = chapter;
+  loadComments(chapter);
+}
+
+async function flipPage(direction) {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  const flipper = document.getElementById('page-flipper');
+  const nextPageEl = document.getElementById('next-page-text');
+
+  let nextPageIndex = currentPage + (direction === 'forward' ? 1 : -1);
+  let nextChapter = currentChapter;
+
+  if (direction === 'forward' && nextPageIndex >= pages.length) {
+    nextChapter = currentChapter + 1;
+    if (nextChapter > totalChapters) { isAnimating = false; return; }
+    await loadChapter(nextChapter);
+    nextPageIndex = 0;
+  } else if (direction === 'backward' && nextPageIndex < 0) {
+    nextChapter = currentChapter - 1;
+    if (nextChapter < 1) { isAnimating = false; return; }
+    await loadChapter(nextChapter);
+    nextPageIndex = pages.length - 1;
+  }
+
+  nextPageEl.innerHTML = pages[nextPageIndex]
+    .map(p => `<p>${escapeHtml(p)}</p>`)
+    .join('');
+
+  const animClass = direction === 'forward' ? 'flipping-forward' : 'flipping-backward';
+  flipper.classList.add(animClass);
+
+  setTimeout(() => {
+    currentChapter = nextChapter;
+    currentPage = nextPageIndex;
+    renderPage(currentPage);
+  }, 300);
+
+  setTimeout(() => {
+    flipper.classList.remove(animClass);
+    isAnimating = false;
+  }, 620);
 }
 
 async function loadChapterList() {
@@ -19,70 +113,20 @@ async function loadChapterList() {
     opt.textContent = `第 ${ch.chapter} 章　${ch.title}`;
     select.appendChild(opt);
   });
-  select.addEventListener('change', () => {
+  select.addEventListener('change', async () => {
     const target = parseInt(select.value);
-    const direction = target > currentChapter ? 'forward' : 'backward';
-    flipToChapter(target, direction);
+    await loadChapter(target);
+    currentChapter = target;
+    currentPage = 0;
+    renderPage(0);
   });
-}
-
-async function fetchChapterData(chapter) {
-  return await fetchJSON(`${API}?action=novel&chapter=${chapter}`);
-}
-
-function renderChapterContent(data) {
-  const content = data.content.replace(/\\n/g, '\n');
-  document.getElementById('chapter-title').textContent = data.title;
-
-  const imgEl = document.getElementById('chapter-image');
-  imgEl.innerHTML = data.image_url
-    ? `<img src="${data.image_url}" alt="插圖">`
-    : '';
-
-  document.getElementById('chapter-content').innerHTML = marked.parse(content);
-  document.getElementById('page-info').textContent = `第 ${data.chapter} 章 / 共 ${totalChapters} 章`;
-  document.getElementById('btn-prev').disabled = data.chapter <= 1;
-  document.getElementById('btn-next').disabled = data.chapter >= totalChapters;
-  document.getElementById('chapter-select').value = data.chapter;
-}
-
-async function flipToChapter(chapter, direction = 'forward') {
-  if (isAnimating) return;
-  isAnimating = true;
-
-  const wrapper = document.getElementById('page-wrapper');
-  const outClass = direction === 'forward' ? 'page-flip-out' : 'page-flip-out-reverse';
-  const inClass  = direction === 'forward' ? 'page-flip-in'  : 'page-flip-in-reverse';
-
-  // 飛出動畫
-  wrapper.classList.add(outClass);
-
-  // 預先載入新章節
-  const data = await fetchChapterData(chapter);
-  currentChapter = chapter;
-  totalChapters = data.total;
-
-  await new Promise(r => setTimeout(r, 500));
-  wrapper.classList.remove(outClass);
-
-  // 渲染新內容
-  renderChapterContent(data);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  loadComments(chapter);
-
-  // 飛入動畫
-  wrapper.classList.add(inClass);
-  await new Promise(r => setTimeout(r, 500));
-  wrapper.classList.remove(inClass);
-
-  isAnimating = false;
 }
 
 async function loadComments(chapter) {
   const data = await fetchJSON(`${API}?action=comments&chapter=${chapter}`);
   const list = document.getElementById('comments-list');
   if (!data.comments.length) {
-    list.innerHTML = '<p style="color:#666688">還沒有留言，來留下第一則吧！</p>';
+    list.innerHTML = '<p style="color:#445566;font-size:0.9rem">還沒有留言，來留下第一則吧！</p>';
     return;
   }
   list.innerHTML = data.comments.map(c => `
@@ -101,30 +145,26 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;');
 }
 
-document.getElementById('btn-prev').addEventListener('click', () => {
-  if (!isAnimating && currentChapter > 1)
-    flipToChapter(currentChapter - 1, 'backward');
-});
-
-document.getElementById('btn-next').addEventListener('click', () => {
-  if (!isAnimating && currentChapter < totalChapters)
-    flipToChapter(currentChapter + 1, 'forward');
-});
+document.getElementById('btn-prev').addEventListener('click', () => flipPage('backward'));
+document.getElementById('btn-next').addEventListener('click', () => flipPage('forward'));
 
 document.getElementById('comment-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const nickname = document.getElementById('nickname').value.trim();
   const message  = document.getElementById('message').value.trim();
   if (!message) return;
-
   await fetch(API, {
     method: 'POST',
     body: JSON.stringify({ action: 'comment', chapter: currentChapter, nickname, message }),
   });
-
   document.getElementById('message').value = '';
   loadComments(currentChapter);
 });
 
-// 初始化
-loadChapterList().then(() => flipToChapter(1, 'forward'));
+(async () => {
+  await loadChapterList();
+  await loadChapter(1);
+  currentChapter = 1;
+  currentPage = 0;
+  renderPage(0);
+})();
