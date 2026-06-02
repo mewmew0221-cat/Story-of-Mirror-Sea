@@ -1,0 +1,141 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Georgia', '新細明體', serif;
+  background: #1a1a2e;
+  color: #e0d7c6;
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  padding: 40px 0 20px;
+  border-bottom: 1px solid #3a3a5c;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  font-size: 2.2rem;
+  color: #c9a96e;
+  letter-spacing: 4px;
+  margin-bottom: 16px;
+}
+
+#chapter-select {
+  background: #2a2a4a;
+  color: #e0d7c6;
+  border: 1px solid #3a3a5c;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+#novel-container {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 40px;
+  margin-bottom: 40px;
+  line-height: 2;
+}
+
+#chapter-title {
+  font-size: 1.5rem;
+  color: #c9a96e;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+#chapter-image img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 24px;
+}
+
+#chapter-content p {
+  margin-bottom: 1.2em;
+  text-indent: 2em;
+  font-size: 1.05rem;
+}
+
+#pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #3a3a5c;
+}
+
+#pagination button {
+  background: #2a2a4a;
+  color: #c9a96e;
+  border: 1px solid #c9a96e;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+#pagination button:hover { background: #3a3a6a; }
+#pagination button:disabled { opacity: 0.3; cursor: default; }
+#page-info { color: #8888aa; font-size: 0.9rem; }
+
+#comments-section {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+#comments-section h2 {
+  color: #c9a96e;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+#comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+#comment-form input,
+#comment-form textarea {
+  background: #2a2a4a;
+  border: 1px solid #3a3a5c;
+  color: #e0d7c6;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+#comment-form textarea { height: 80px; resize: vertical; }
+
+#comment-form button {
+  align-self: flex-end;
+  background: #c9a96e;
+  color: #1a1a2e;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.comment-item {
+  border-bottom: 1px solid #2a2a4a;
+  padding: 12px 0;
+}
+
+.comment-item .name { color: #c9a96e; font-weight: bold; margin-bottom: 4px; }
+.comment-item .text { font-size: 0.95rem; line-height: 1.6; }
+.comment-item .time { font-size: 0.8rem; color: #666688; margin-top: 4px; }
