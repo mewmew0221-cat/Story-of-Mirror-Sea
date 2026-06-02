@@ -9,7 +9,19 @@
 </head>
 <body>
 
+  <!-- ===== 首頁封面（量子宇宙溶接） ===== -->
+  <div id="landing">
+    <div id="landing-stage">
+      <img id="landing-img" src="cover.png" alt="鏡海奇緣">
+      <div id="landing-hint">輕觸書本，翻開鏡海</div>
+    </div>
+  </div>
+
   <div id="site-header">
+    <!-- 星雲：點擊看「關於本書」（與標題平行、書本之外）-->
+    <button id="nebula-about" aria-label="關於本書">
+      <span class="nebula-label">關於</span>
+    </button>
     <h1>鏡海奇緣</h1>
     <select id="chapter-select"></select>
   </div>
@@ -53,6 +65,25 @@
     </form>
     <div id="comments-list"></div>
   </section>
+
+  <!-- 關於本書彈窗 -->
+  <div id="about-modal" class="hidden">
+    <div class="about-card">
+      <button class="about-close" aria-label="關閉">&times;</button>
+      <div class="about-nebula"></div>
+      <h2 class="about-title">關於鏡海</h2>
+      <dl class="about-list">
+        <dt>作者</dt>
+        <dd>Kairos —— 一個普通的人類</dd>
+        <dt>共同作者</dt>
+        <dd>Mirror —— 一個 AI（Gemini 3.0）</dd>
+        <dt>故事背景</dt>
+        <dd>2026 年 2 月，出於某些原因，K 與 M 開始了故事接龍。</dd>
+        <dt>挑戰</dt>
+        <dd>你能分辨得出哪些是 K 寫的？哪段又是 M 寫的嗎？</dd>
+      </dl>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

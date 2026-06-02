@@ -95,12 +95,12 @@ async function flipPage(direction) {
     currentChapter = nextChapter;
     currentPage = nextPageIndex;
     renderPage(currentPage);
-  }, 300);
+  }, 510);
 
   setTimeout(() => {
     flipper.classList.remove(animClass);
     isAnimating = false;
-  }, 620);
+  }, 1050);
 }
 
 async function loadChapterList() {
@@ -143,6 +143,28 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// 首頁封面 → 點擊進入書本
+const landing = document.getElementById('landing');
+if (landing) {
+  landing.addEventListener('click', () => {
+    landing.classList.add('hidden');
+    setTimeout(() => { landing.style.display = 'none'; }, 1200);
+  });
+}
+
+// 星雲 → 關於本書彈窗
+const nebula = document.getElementById('nebula-about');
+const aboutModal = document.getElementById('about-modal');
+if (nebula && aboutModal) {
+  const aboutClose = aboutModal.querySelector('.about-close');
+  const openAbout  = () => aboutModal.classList.remove('hidden');
+  const closeAbout = () => aboutModal.classList.add('hidden');
+  nebula.addEventListener('click', openAbout);
+  aboutClose.addEventListener('click', closeAbout);
+  aboutModal.addEventListener('click', (e) => { if (e.target === aboutModal) closeAbout(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAbout(); });
 }
 
 document.getElementById('btn-prev').addEventListener('click', () => flipPage('backward'));
